@@ -14,7 +14,7 @@ jobs:
       - name: Extract version from tag
         id: extract_version
         run: echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-        
+
       - name: Create Tag
         id: create_tag
         uses: jaywcjlove/create-tag-action@main
@@ -22,4 +22,4 @@ jobs:
           version: ${{ steps.extract_version.outputs.version }}
           release: true
           body: |
-            **Full Changelog**: https://github.com/jaywcjlove/PermissionFlow/commits/${{ steps.extract_version.outputs.version }}
+            **Full Changelog**: https://github.com/jaywcjlove/ffmpeg-kit/commits/${{ steps.extract_version.outputs.version }}
