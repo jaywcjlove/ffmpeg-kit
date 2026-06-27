@@ -54,7 +54,7 @@ swift test
 
 ## Rebuilding Native Libraries
 
-Rebuild when you change native C code in `apple/src/`, upgrade FFmpeg, or enable optional codecs like x264. Sync the output into `Frameworks/` and commit.
+Rebuild when you change native C code in `apple/src/`, upgrade FFmpeg, or enable optional codecs. Sync the output into `Frameworks/` and commit.
 
 ### Build flow
 
@@ -84,7 +84,7 @@ Removes `prebuilt/`, `.tmp/`, `src/*`, `build.log`, and compile artifacts. Does 
 ./apple.sh
 ```
 
-**Full build** (all optional libraries including GPL codecs; iOS and macOS must use matching flags):
+**Full build** (all optional libraries including GPL codecs; iOS and macOS must use matching external-library flags):
 
 ```bash
 ./ios.sh --full --enable-gpl
@@ -127,13 +127,113 @@ swift build && swift test
 | What is `src/`? | Downloaded FFmpeg and dependency sources during build; safe to delete |
 | `prebuilt/` vs `Frameworks/` | `prebuilt/` is local build output (gitignored); `Frameworks/` is committed for SPM |
 | Changed `apple/src/*.c` | Rerun steps 2–4 |
+| Apple built-in flags | Use `--enable-macos-*` on macOS and `--enable-ios-*` on iOS; do not mix prefixes |
+
+## Full build for video / audio conversion apps
+
+Use this when shipping **both iOS and macOS** video or audio conversion apps. Enables x264 (H.264 software encoding), common audio codecs via `--full` (lame, opus, vorbis, etc.), and Apple hardware acceleration (VideoToolbox).
+
+### Codec coverage
+
+| Category | Build flags | Typical usage |
+|----------|-------------|---------------|
+| H.264 software encode | `--enable-gpl --enable-x264` | `-c:v libx264` |
+| H.264 hardware encode/decode | `--enable-*-videotoolbox` | `-c:v h264_videotoolbox` |
+| MP3 / Opus / Vorbis, etc. | `--full` (includes lame, opus, libvorbis, etc.) | `-c:a libmp3lame`, `-c:a libopus` |
+| System audio/video I/O | `--enable-*-audiotoolbox`, `--enable-*-avfoundation` | Microphone, camera, system audio |
+
+> `--enable-macos-coreimage`, `--enable-macos-opencl`, and `--enable-macos-opengl` are macOS-only and optional. iOS has no matching flags.
+
+### Complete build steps
+
+Run from the repository root:
+
+```bash
+# 1. Optional: clean previous artifacts
+./tools/clean.sh
+
+# 2. Build macOS
+./macos.sh --full --enable-gpl --enable-x264 \
+  --enable-macos-videotoolbox \
+  --enable-macos-audiotoolbox \
+  --enable-macos-avfoundation \
+  --enable-macos-bzip2 \
+  --enable-macos-zlib \
+  --enable-macos-libiconv
+
+# 3. Build iOS (same external-library flags; use ios-* for Apple built-ins)
+./ios.sh --full --enable-gpl --enable-x264 \
+  --enable-ios-videotoolbox \
+  --enable-ios-audiotoolbox \
+  --enable-ios-avfoundation \
+  --enable-ios-bzip2 \
+  --enable-ios-zlib \
+  --enable-ios-libiconv
+
+# 4. Merge into universal XCFrameworks
+./apple.sh
+
+# 5. Sync into the SPM directory
+cp -R prebuilt/bundle-apple-xcframework/*.xcframework Frameworks/
+
+# 6. Verify
+swift build && swift test
+
+# 7. Commit (if updating binaries in the repo)
+git add Frameworks/
+git commit -m "Update XCFrameworks for video/audio conversion (full + GPL + x264)"
+```
+
+The iOS build is usually the longest step (often 1–3+ hours). Keep network access available.
+
+### Usage in your apps
+
+**Video to H.264 (software):**
+
+```swift
+FFmpegKit.execute("-i input.mov -c:v libx264 -preset medium -crf 23 -c:a aac output.mp4")
+```
+
+**Video to H.264 (hardware):**
+
+```swift
+FFmpegKit.execute("-i input.mov -c:v h264_videotoolbox -b:v 5M -c:a aac output.mp4")
+```
+
+**Audio to MP3:**
+
+```swift
+FFmpegKit.execute("-i input.wav -c:a libmp3lame -b:a 192k output.mp3")
+```
+
+**Audio to Opus:**
+
+```swift
+FFmpegKit.execute("-i input.wav -c:a libopus -b:a 128k output.opus")
+```
+
+**Remux only (no re-encode, fastest):**
+
+```swift
+FFmpegKit.execute("-i input.mkv -c copy output.mp4")
+```
+
+### Using in multiple apps
+
+1. Add this repository as a Swift Package dependency in both your video and audio conversion apps (same `Frameworks/`)
+2. `import ffmpegkit` — no manual XCFramework linking
+3. After updating `Frameworks/`, **Reset Package Caches** in Xcode or bump the dependency
+
+### Licensing note
+
+With `--enable-gpl` and x264 enabled, **app distribution must comply with GPL** (typically requiring source disclosure or GPL-compliant distribution). If one app cannot accept GPL, build a separate variant without `--enable-gpl --enable-x264`.
 
 ## Project layout
 
 ```
 ffmpeg-kit/
 ├── Package.swift              # Swift Package (with binaryTarget)
-├── Frameworks/                # Committed XCFrameworks (~70MB)
+├── Frameworks/                # Committed XCFrameworks (~70MB+; larger with full builds)
 ├── README.md / README.zh.md   # English / Chinese docs
 ├── LICENSE
 ├── ios.sh / macos.sh / apple.sh

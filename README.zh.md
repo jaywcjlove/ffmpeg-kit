@@ -84,7 +84,7 @@ cp 到 Frameworks/  → 提交 git
 ./apple.sh
 ```
 
-**完整构建**（含 GPL 库如 x264；iOS 与 macOS 必须使用相同参数）：
+**完整构建**（含 GPL 库如 x264；iOS 与 macOS 必须使用相同的外部库参数）：
 
 ```bash
 ./ios.sh --full --enable-gpl
@@ -122,18 +122,118 @@ swift build && swift test
 
 | 问题 | 处理 |
 |------|------|
-| `./apple.sh` 报错找不到 Framework | 确认 `ios.sh` 和 `macos.sh` 均已成功，且库选项一致 |
+| `./apple.sh` 报错找不到 Framework | 确认 `ios.sh` 和 `macos.sh` 均已成功，且外部库选项一致 |
 | 只想更新某一个库 | 不支持；需完整重跑三步构建 |
 | `src/` 是什么 | 构建时下载的 FFmpeg 等源码缓存，可删 |
 | `prebuilt/` vs `Frameworks/` | `prebuilt/` 本地构建输出（git 忽略）；`Frameworks/` 提交到仓库供 SPM 分发 |
 | 修改了 `apple/src/*.c` | 重跑步骤 2–4 |
+| macOS 内置库参数 | 使用 `--enable-macos-*`；iOS 使用 `--enable-ios-*`，不能混用 |
+
+## 视频 / 音频转换应用完整构建
+
+适用于同时发布 **iOS + macOS** 的视频转换、音频转换类 App。启用 x264（H.264 软编）、常见音频编解码器（lame、opus、vorbis 等，由 `--full` 提供）及 Apple 硬件加速（VideoToolbox）。
+
+### 编解码能力说明
+
+| 类别 | 构建参数 | 典型用途 |
+|------|----------|----------|
+| H.264 软编 | `--enable-gpl --enable-x264` | `-c:v libx264` |
+| H.264 硬编/硬解 | `--enable-*-videotoolbox` | `-c:v h264_videotoolbox` |
+| MP3 / Opus / Vorbis 等 | `--full`（已含 lame、opus、libvorbis 等） | `-c:a libmp3lame`、`-c:a libopus` |
+| 系统音视频 I/O | `--enable-*-audiotoolbox`、`--enable-*-avfoundation` | 麦克风、相机、系统音频 |
+
+> `--enable-macos-coreimage`、`--enable-macos-opencl`、`--enable-macos-opengl` 仅 macOS 可选；iOS 无对应参数。
+
+### 完整构建步骤
+
+在仓库根目录依次执行：
+
+```bash
+# 1. 可选：清理旧产物
+./tools/clean.sh
+
+# 2. 构建 macOS
+./macos.sh --full --enable-gpl --enable-x264 \
+  --enable-macos-videotoolbox \
+  --enable-macos-audiotoolbox \
+  --enable-macos-avfoundation \
+  --enable-macos-bzip2 \
+  --enable-macos-zlib \
+  --enable-macos-libiconv
+
+# 3. 构建 iOS（外部库参数须与 macOS 一致；内置库使用 ios-* 前缀）
+./ios.sh --full --enable-gpl --enable-x264 \
+  --enable-ios-videotoolbox \
+  --enable-ios-audiotoolbox \
+  --enable-ios-avfoundation \
+  --enable-ios-bzip2 \
+  --enable-ios-zlib \
+  --enable-ios-libiconv
+
+# 4. 合并为全平台 XCFramework
+./apple.sh
+
+# 5. 同步到 SPM 目录
+cp -R prebuilt/bundle-apple-xcframework/*.xcframework Frameworks/
+
+# 6. 验证
+swift build && swift test
+
+# 7. 提交（如需更新仓库中的二进制）
+git add Frameworks/
+git commit -m "Update XCFrameworks for video/audio conversion (full + GPL + x264)"
+```
+
+iOS 构建通常最耗时（1–3 小时或更长），请保持网络畅通。
+
+### 构建后如何在 App 中使用
+
+**视频转 H.264（软编）：**
+
+```swift
+FFmpegKit.execute("-i input.mov -c:v libx264 -preset medium -crf 23 -c:a aac output.mp4")
+```
+
+**视频转 H.264（硬件编码）：**
+
+```swift
+FFmpegKit.execute("-i input.mov -c:v h264_videotoolbox -b:v 5M -c:a aac output.mp4")
+```
+
+**音频转 MP3：**
+
+```swift
+FFmpegKit.execute("-i input.wav -c:a libmp3lame -b:a 192k output.mp3")
+```
+
+**音频转 Opus：**
+
+```swift
+FFmpegKit.execute("-i input.wav -c:a libopus -b:a 128k output.opus")
+```
+
+**仅改封装（不重新编码，速度最快）：**
+
+```swift
+FFmpegKit.execute("-i input.mkv -c copy output.mp4")
+```
+
+### 集成到多个 App
+
+1. 视频转换 App、音频转换 App 均添加本仓库为 Swift Package 依赖（共用同一套 `Frameworks/`）
+2. `import ffmpegkit` 即可，无需手动链接 XCFramework
+3. 更新 `Frameworks/` 后，在 Xcode 中 **Reset Package Caches** 或更新依赖版本
+
+### 许可证提醒
+
+启用 `--enable-gpl` 与 x264 后，**App 分发须遵守 GPL**（通常要求开源或按 GPL 条款处理）。若某个 App 不能接受 GPL，需单独构建不含 x264 的变体（去掉 `--enable-gpl --enable-x264`）。
 
 ## 目录结构
 
 ```
 ffmpeg-kit/
 ├── Package.swift              # Swift Package（含 binaryTarget）
-├── Frameworks/                # 随仓库分发的 XCFramework（约 70MB）
+├── Frameworks/                # 随仓库分发的 XCFramework（约 70MB+，完整构建更大）
 ├── README.md / README.zh.md   # 英文 / 中文文档
 ├── LICENSE
 ├── ios.sh / macos.sh / apple.sh

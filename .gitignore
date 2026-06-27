@@ -6,3 +6,4 @@
 !/src/.gitignore
 .DS_Store
 .idea
+.swiftpm
