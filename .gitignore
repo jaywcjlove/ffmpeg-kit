@@ -1,0 +1,8 @@
+/.tmp/
+/.build/
+/*.log
+/prebuilt/
+/src/*
+!/src/.gitignore
+.DS_Store
+.idea
