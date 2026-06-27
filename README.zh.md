@@ -153,13 +153,14 @@ swift build && swift test
 ./tools/clean.sh
 
 # 2. 构建 macOS
-./macos.sh --full --enable-gpl --enable-x264 \
+./macos.sh \
   --enable-macos-videotoolbox \
-  --enable-macos-audiotoolbox \
   --enable-macos-avfoundation \
+  --enable-macos-audiotoolbox \
   --enable-macos-bzip2 \
   --enable-macos-zlib \
-  --enable-macos-libiconv
+  --enable-macos-libiconv \
+  --enable-gpl --enable-x264
 
 # 3. 构建 iOS（外部库参数须与 macOS 一致；内置库使用 ios-* 前缀）
 ./ios.sh --full --enable-gpl --enable-x264 \
