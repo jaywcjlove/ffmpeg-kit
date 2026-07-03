@@ -14,6 +14,10 @@ fi
 overwrite_file "${FFMPEG_KIT_TMPDIR}"/source/config/config.guess "${BASEDIR}"/src/"${LIB_NAME}"/config.guess || return 1
 overwrite_file "${FFMPEG_KIT_TMPDIR}"/source/config/config.sub "${BASEDIR}"/src/"${LIB_NAME}"/config.sub || return 1
 
+# LAME 3.100's autotools files do not consistently recognize arm64 as a CPU
+# name. Use its canonical GNU spelling while keeping the platform suffix.
+LAME_HOST="${HOST/arm64/aarch64}"
+
 ./configure \
   --prefix="${LIB_INSTALL_PREFIX}" \
   --with-pic \
@@ -26,7 +30,7 @@ overwrite_file "${FFMPEG_KIT_TMPDIR}"/source/config/config.sub "${BASEDIR}"/src/
   --disable-frontend \
   --disable-efence \
   --disable-gtktest \
-  --host="${HOST}" || return 1
+  --host="${LAME_HOST}" || return 1
 
 make -j$(get_cpu_count) || return 1
 
