@@ -153,13 +153,21 @@ Run from the repository root:
 ./tools/clean.sh
 
 # 2. Build macOS
-./macos.sh --full --enable-gpl --enable-x264 \
+./macos.sh \
   --enable-macos-videotoolbox \
-  --enable-macos-audiotoolbox \
   --enable-macos-avfoundation \
+  --enable-macos-audiotoolbox \
   --enable-macos-bzip2 \
   --enable-macos-zlib \
-  --enable-macos-libiconv
+  --enable-macos-libiconv \
+  --enable-libvorbis \
+  --enable-libtheora \
+  --enable-opus \
+  --enable-opencore-amr \
+  --enable-libvpx \
+  --enable-speex \
+  --enable-lame \
+  --enable-gpl --enable-x264
 
 # 3. Build iOS (same external-library flags; use ios-* for Apple built-ins)
 ./ios.sh --full --enable-gpl --enable-x264 \
@@ -168,7 +176,14 @@ Run from the repository root:
   --enable-ios-avfoundation \
   --enable-ios-bzip2 \
   --enable-ios-zlib \
-  --enable-ios-libiconv
+  --enable-ios-libiconv \
+  --enable-libvorbis \
+  --enable-libtheora \
+  --enable-opus \
+  --enable-opencore-amr \
+  --enable-libvpx \
+  --enable-speex \
+  --enable-lame
 
 # 4. Merge into universal XCFrameworks
 ./apple.sh

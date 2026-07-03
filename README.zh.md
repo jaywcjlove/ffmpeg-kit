@@ -160,6 +160,13 @@ swift build && swift test
   --enable-macos-bzip2 \
   --enable-macos-zlib \
   --enable-macos-libiconv \
+  --enable-libvorbis \
+  --enable-libtheora \
+  --enable-opus \
+  --enable-opencore-amr \
+  --enable-libvpx \
+  --enable-speex \
+  --enable-lame \
   --enable-gpl --enable-x264
 
 # 3. 构建 iOS（外部库参数须与 macOS 一致；内置库使用 ios-* 前缀）
@@ -169,7 +176,14 @@ swift build && swift test
   --enable-ios-avfoundation \
   --enable-ios-bzip2 \
   --enable-ios-zlib \
-  --enable-ios-libiconv
+  --enable-ios-libiconv \
+  --enable-libvorbis \
+  --enable-libtheora \
+  --enable-opus \
+  --enable-opencore-amr \
+  --enable-libvpx \
+  --enable-speex \
+  --enable-lame
 
 # 4. 合并为全平台 XCFramework
 ./apple.sh
