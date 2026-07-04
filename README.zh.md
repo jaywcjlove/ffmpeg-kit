@@ -5,8 +5,6 @@ FFmpegKit for iOS and macOS
 [![Follow On X](https://img.shields.io/badge/Follow%20on%20X-333333?logo=x&logoColor=white)](https://x.com/jaywcjlove)
 [![English](https://jaywcjlove.github.io/sb/lang/english.svg)](README.md)
 
-[English](README.md)
-
 本仓库是 FFmpegKit 的 Apple 平台分支，提供 **Swift API** + **C 桥接层**，用于在 iOS / macOS 上调用 FFmpeg / FFprobe。
 
 - Swift Package 提供上层 API（`Sources/`）
