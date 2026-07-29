@@ -31,6 +31,10 @@ if [[ -n "$DETECTED_IOS_SDK_VERSION" && $(compare_versions "$DETECTED_IOS_SDK_VE
   ${SED_INLINE} "s|ZLIB_VERNUM default .*|ZLIB_VERNUM default 0|g" "${BASEDIR}"/src/"${LIB_NAME}"/scripts/pnglibconf.dfa
 fi
 
+# Modern Apple SDKs define TARGET_OS_MAC but no longer ship <fp.h> (classic Mac header).
+# Force libpng to use <math.h> instead of the obsolete classic Mac path.
+${SED_INLINE} 's/defined(THINK_C) || defined(__SC__) || defined(TARGET_OS_MAC)/defined(THINK_C) || defined(__SC__)/g' "${BASEDIR}"/src/"${LIB_NAME}"/pngpriv.h
+
 ./configure \
   --prefix="${LIB_INSTALL_PREFIX}" \
   --with-pic \

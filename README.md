@@ -143,6 +143,7 @@ Use this when shipping **both iOS and macOS** video or audio conversion apps. En
 | H.264 software encode | `--enable-gpl --enable-x264` | `-c:v libx264` |
 | H.264 hardware encode/decode | `--enable-*-videotoolbox` | `-c:v h264_videotoolbox` |
 | MP3 / Opus / Vorbis, etc. | `--full` (includes lame, opus, libvorbis, etc.) | `-c:a libmp3lame`, `-c:a libopus` |
+| WebP encode/decode | `--enable-libwebp` (pulls giflib/jpeg/libpng/tiff) | `-c:v libwebp`, `output.webp` |
 | System audio/video I/O | `--enable-*-audiotoolbox`, `--enable-*-avfoundation` | Microphone, camera, system audio |
 
 > `--enable-macos-coreimage`, `--enable-macos-opencl`, and `--enable-macos-opengl` are macOS-only and optional. iOS has no matching flags.
@@ -165,6 +166,7 @@ Run from the repository root:
   --enable-macos-libiconv \
   --enable-libvorbis \
   --enable-libtheora \
+  --enable-libwebp \
   --enable-opus \
   --enable-opencore-amr \
   --enable-libvpx \
@@ -182,6 +184,7 @@ Run from the repository root:
   --enable-ios-libiconv \
   --enable-libvorbis \
   --enable-libtheora \
+  --enable-libwebp \
   --enable-opus \
   --enable-opencore-amr \
   --enable-libvpx \
@@ -228,6 +231,19 @@ FFmpegKit.execute("-i input.wav -c:a libmp3lame -b:a 192k output.mp3")
 
 ```swift
 FFmpegKit.execute("-i input.wav -c:a libopus -b:a 128k output.opus")
+```
+
+**Image / frame to WebP:**
+
+```swift
+// Lossy WebP
+FFmpegKit.execute("-i input.png -c:v libwebp -quality 80 output.webp")
+
+// Lossless WebP
+FFmpegKit.execute("-i input.png -c:v libwebp -lossless 1 output.webp")
+
+// Animated WebP
+FFmpegKit.execute("-i input.gif -c:v libwebp -quality 75 -loop 0 output.webp")
 ```
 
 **Remux only (no re-encode, fastest):**

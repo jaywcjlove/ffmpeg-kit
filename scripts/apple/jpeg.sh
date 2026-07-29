@@ -25,6 +25,9 @@ esac
 # WORKAROUND TO FIX ASM FLAGS
 ${SED_INLINE} 's/${CMAKE_C_FLAGS} ${CMAKE_ASM_FLAGS}/${CMAKE_ASM_FLAGS}/g' "${BASEDIR}"/src/"${LIB_NAME}"/simd/CMakeLists.txt
 
+# CMake 4.x dropped support for cmake_minimum_required < 3.5 (libjpeg-turbo 3.0.0 uses 2.8.12)
+${SED_INLINE} 's/cmake_minimum_required(VERSION 2\.[0-9.]*)/cmake_minimum_required(VERSION 3.5)/g' "${BASEDIR}"/src/"${LIB_NAME}"/CMakeLists.txt
+
 mkdir -p "${BUILD_DIR}" || return 1
 cd "${BUILD_DIR}" || return 1
 
@@ -44,6 +47,7 @@ cmake -Wno-dev \
   -DCMAKE_LINKER="$LD" \
   -DCMAKE_AR="$(xcrun --sdk $(get_sdk_name) -f ar)" \
   -DCMAKE_ASM_FLAGS="$ASM_FLAGS" \
+  -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
   -DENABLE_PIC=1 \
   -DENABLE_STATIC=1 \
   -DENABLE_SHARED=0 \

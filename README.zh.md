@@ -143,6 +143,7 @@ swift build && swift test
 | H.264 软编 | `--enable-gpl --enable-x264` | `-c:v libx264` |
 | H.264 硬编/硬解 | `--enable-*-videotoolbox` | `-c:v h264_videotoolbox` |
 | MP3 / Opus / Vorbis 等 | `--full`（已含 lame、opus、libvorbis 等） | `-c:a libmp3lame`、`-c:a libopus` |
+| WebP 编解码 | `--enable-libwebp`（含 giflib/jpeg/libpng/tiff 依赖） | `-c:v libwebp`、`output.webp` |
 | 系统音视频 I/O | `--enable-*-audiotoolbox`、`--enable-*-avfoundation` | 麦克风、相机、系统音频 |
 
 > `--enable-macos-coreimage`、`--enable-macos-opencl`、`--enable-macos-opengl` 仅 macOS 可选；iOS 无对应参数。
@@ -165,6 +166,7 @@ swift build && swift test
   --enable-macos-libiconv \
   --enable-libvorbis \
   --enable-libtheora \
+  --enable-libwebp \
   --enable-opus \
   --enable-opencore-amr \
   --enable-libvpx \
@@ -182,6 +184,7 @@ swift build && swift test
   --enable-ios-libiconv \
   --enable-libvorbis \
   --enable-libtheora \
+  --enable-libwebp \
   --enable-opus \
   --enable-opencore-amr \
   --enable-libvpx \
@@ -228,6 +231,19 @@ FFmpegKit.execute("-i input.wav -c:a libmp3lame -b:a 192k output.mp3")
 
 ```swift
 FFmpegKit.execute("-i input.wav -c:a libopus -b:a 128k output.opus")
+```
+
+**图片 / 视频帧转 WebP：**
+
+```swift
+// 有损 WebP
+FFmpegKit.execute("-i input.png -c:v libwebp -quality 80 output.webp")
+
+// 无损 WebP
+FFmpegKit.execute("-i input.png -c:v libwebp -lossless 1 output.webp")
+
+// 动画 WebP（多帧）
+FFmpegKit.execute("-i input.gif -c:v libwebp -quality 75 -loop 0 output.webp")
 ```
 
 **仅改封装（不重新编码，速度最快）：**
