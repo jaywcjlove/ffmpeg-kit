@@ -1028,7 +1028,29 @@ exit_universal_library() {
   exit 1
 }
 
+# Meson ignores CFLAGS when cross compiling. Quote each shell word as a string array.
+meson_string_array() {
+  local out=""
+  local word
+  for word in "$@"; do
+    word=${word//\\/\\\\}
+    word=${word//\'/\\\'}
+    if [[ -n ${out} ]]; then
+      out+=", "
+    fi
+    out+="'${word}'"
+  done
+  printf '%s' "${out}"
+}
+
 create_mason_cross_file() {
+  local c_args
+  local c_link_args
+  # shellcheck disable=SC2086
+  c_args=$(meson_string_array ${CFLAGS})
+  # shellcheck disable=SC2086
+  c_link_args=$(meson_string_array ${LDFLAGS})
+
   cat >"$1" <<EOF
 [binaries]
 c = '$CC'
@@ -1048,6 +1070,8 @@ cpu = '$(get_target_cpu)'
 endian = 'little'
 
 [built-in options]
+c_args = [${c_args}]
+c_link_args = [${c_link_args}]
 default_library = 'static'
 prefix = '${LIB_INSTALL_PREFIX}'
 EOF

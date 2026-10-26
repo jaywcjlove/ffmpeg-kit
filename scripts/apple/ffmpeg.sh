@@ -463,6 +463,10 @@ if [[ -z ${NO_WORKSPACE_CLEANUP_ffmpeg} ]]; then
   echo -e "INFO: Cleaning workspace for ${LIB_NAME}\n" 1>>"${BASEDIR}"/build.log 2>&1
   make distclean 2>/dev/null 1>/dev/null
 
+  # distclean leaves dependency files from the previous architecture. A stale
+  # .d that points at another SDK, such as iPhoneSimulator, fails the next build.
+  find . -name '*.d' -delete 1>>"${BASEDIR}"/build.log 2>&1
+
   # WORKAROUND TO MANUALLY DELETE UNCLEANED FILES
   rm -f "${BASEDIR}"/src/"${LIB_NAME}"/libavfilter/opencl/*.o 1>>"${BASEDIR}"/build.log 2>&1
   rm -f "${BASEDIR}"/src/"${LIB_NAME}"/libavcodec/neon/*.o 1>>"${BASEDIR}"/build.log 2>&1

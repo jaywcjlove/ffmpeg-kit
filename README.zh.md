@@ -184,6 +184,7 @@ swift build && swift test
 | H.264 硬编/硬解 | `--enable-*-videotoolbox` | `-c:v h264_videotoolbox` |
 | MP3 / Opus / Vorbis 等 | `--full`（已含 lame、opus、libvorbis 等） | `-c:a libmp3lame`、`-c:a libopus` |
 | WebP 编解码 | `--enable-libwebp`（含 giflib/jpeg/libpng/tiff 依赖） | `-c:v libwebp`、`output.webp` |
+| AV1 解码 | `--enable-dav1d` | `-c:v libdav1d` |
 | 系统音视频 I/O | `--enable-*-audiotoolbox`、`--enable-*-avfoundation` | 麦克风、相机、系统音频 |
 
 > `--enable-macos-coreimage`、`--enable-macos-opencl`、`--enable-macos-opengl` 仅 macOS 可选；iOS 无对应参数。
@@ -207,6 +208,7 @@ swift build && swift test
   --enable-libvorbis \
   --enable-libtheora \
   --enable-libwebp \
+  --enable-dav1d \
   --enable-opus \
   --enable-opencore-amr \
   --enable-libvpx \
@@ -225,6 +227,7 @@ swift build && swift test
   --enable-libvorbis \
   --enable-libtheora \
   --enable-libwebp \
+  --enable-dav1d \
   --enable-opus \
   --enable-opencore-amr \
   --enable-libvpx \

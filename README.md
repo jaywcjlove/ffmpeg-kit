@@ -184,6 +184,7 @@ Use this when shipping **both iOS and macOS** video or audio conversion apps. En
 | H.264 hardware encode/decode | `--enable-*-videotoolbox` | `-c:v h264_videotoolbox` |
 | MP3 / Opus / Vorbis, etc. | `--full` (includes lame, opus, libvorbis, etc.) | `-c:a libmp3lame`, `-c:a libopus` |
 | WebP encode/decode | `--enable-libwebp` (pulls giflib/jpeg/libpng/tiff) | `-c:v libwebp`, `output.webp` |
+| AV1 decode | `--enable-dav1d` | `-c:v libdav1d` |
 | System audio/video I/O | `--enable-*-audiotoolbox`, `--enable-*-avfoundation` | Microphone, camera, system audio |
 
 > `--enable-macos-coreimage`, `--enable-macos-opencl`, and `--enable-macos-opengl` are macOS-only and optional. iOS has no matching flags.
@@ -207,6 +208,7 @@ Run from the repository root:
   --enable-libvorbis \
   --enable-libtheora \
   --enable-libwebp \
+  --enable-dav1d \
   --enable-opus \
   --enable-opencore-amr \
   --enable-libvpx \
@@ -225,6 +227,7 @@ Run from the repository root:
   --enable-libvorbis \
   --enable-libtheora \
   --enable-libwebp \
+  --enable-dav1d \
   --enable-opus \
   --enable-opencore-amr \
   --enable-libvpx \
